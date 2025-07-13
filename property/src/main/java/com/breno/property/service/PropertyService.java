@@ -2,6 +2,7 @@ package com.breno.property.service;
 
 import com.breno.property.dto.CreatePropertyRequestDTO;
 import com.breno.property.dto.PropertyResponseDTO;
+import com.breno.property.dto.UpdatePropertyRequestDTO;
 import com.breno.property.entity.Property;
 import com.breno.property.exception.ResourceNotFoundException;
 import com.breno.property.repository.PropertyRepository;
@@ -49,6 +50,21 @@ public class PropertyService {
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
 
         return mapToResponseDTO(property);
+    }
+
+    public PropertyResponseDTO updateProperty(UUID id, UpdatePropertyRequestDTO requestDTO) {
+        Property propertyToUpdate = propertyRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
+
+        propertyToUpdate.setName(requestDTO.getName());
+        propertyToUpdate.setAddressCity(requestDTO.getAddressCity());
+        propertyToUpdate.setAddressState(requestDTO.getAddressState());
+        propertyToUpdate.setTotalArea(requestDTO.getTotalArea());
+        propertyToUpdate.setUpdatedAt(Instant.now());
+
+        Property updatedProperty = propertyRepository.save(propertyToUpdate);
+
+        return mapToResponseDTO(updatedProperty);
     }
 
     private PropertyResponseDTO mapToResponseDTO(Property property) {

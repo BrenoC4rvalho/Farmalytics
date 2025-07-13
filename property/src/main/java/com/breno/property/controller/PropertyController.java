@@ -2,6 +2,7 @@ package com.breno.property.controller;
 
 import com.breno.property.dto.CreatePropertyRequestDTO;
 import com.breno.property.dto.PropertyResponseDTO;
+import com.breno.property.dto.UpdatePropertyRequestDTO;
 import com.breno.property.service.PropertyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,12 @@ public class PropertyController {
     public ResponseEntity<PropertyResponseDTO> getPropertyById(@PathVariable UUID id) {
         PropertyResponseDTO property = propertyService.getPropertyById(id);
         return ResponseEntity.ok(property);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PropertyResponseDTO> updateProperty(@PathVariable UUID id, @RequestBody UpdatePropertyRequestDTO requestDTO) {
+        PropertyResponseDTO updatedProperty = propertyService.updateProperty(id, requestDTO);
+        return ResponseEntity.ok(updatedProperty);
     }
 
 }
