@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/properties")
@@ -29,6 +30,12 @@ public class PropertyController {
     public ResponseEntity<List<PropertyResponseDTO>> getAllProperties() {
         List<PropertyResponseDTO> properties = propertyService.getAllProperties();
         return ResponseEntity.ok(properties);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PropertyResponseDTO> getPropertyById(@PathVariable UUID id) {
+        PropertyResponseDTO property = propertyService.getPropertyById(id);
+        return ResponseEntity.ok(property);
     }
 
 }
