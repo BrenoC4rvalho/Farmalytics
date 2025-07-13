@@ -67,6 +67,14 @@ public class PropertyService {
         return mapToResponseDTO(updatedProperty);
     }
 
+    public void deleteProperty(UUID id) {
+        if (!propertyRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Property not found with id: " + id);
+        }
+
+        propertyRepository.deleteById(id);
+    }
+
     private PropertyResponseDTO mapToResponseDTO(Property property) {
         return PropertyResponseDTO.builder()
                 .id(property.getId())
