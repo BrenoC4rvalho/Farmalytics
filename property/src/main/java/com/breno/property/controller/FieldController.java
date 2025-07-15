@@ -55,4 +55,13 @@ public class FieldController {
         return ResponseEntity.ok(updatedField);
     }
 
+    @DeleteMapping("/{fieldId}")
+    public ResponseEntity<Void> deleteField(
+            @PathVariable UUID propertyId,
+            @PathVariable UUID fieldId) {
+
+        fieldService.deleteField(propertyId, fieldId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

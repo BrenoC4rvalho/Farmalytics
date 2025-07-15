@@ -99,4 +99,20 @@ public class FieldService {
                 .propertyId(field.getProperty().getId())
                 .build();
     }
+
+    public void deleteField(UUID propertyId, UUID fieldId) {
+        if (!propertyRepository.existsById(propertyId)) {
+            throw new ResourceNotFoundException("Property not found with id: " + propertyId);
+        }
+
+        Field fieldToDelete = fieldRepository.findById(fieldId)
+                .orElseThrow(() -> new ResourceNotFoundException("Field not found with id: " + fieldId));
+
+        if (!fieldToDelete.getProperty().getId().equals(propertyId)) {
+            throw new ResourceNotFoundException("Field with id: " + fieldId + " does not belong to property " + propertyId);
+        }
+
+        fieldRepository.delete(fieldToDelete);
+    }
+
 }
