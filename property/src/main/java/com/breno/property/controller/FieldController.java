@@ -35,4 +35,13 @@ public class FieldController {
         return ResponseEntity.ok(fields);
     }
 
+    @GetMapping("/{fieldId}")
+    public ResponseEntity<FieldResponseDTO> getFieldById(
+            @PathVariable UUID propertyId,
+            @PathVariable UUID fieldId) {
+
+        FieldResponseDTO field = fieldService.getFieldById(propertyId, fieldId);
+        return ResponseEntity.ok(field);
+    }
+
 }

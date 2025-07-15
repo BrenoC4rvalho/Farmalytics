@@ -55,6 +55,17 @@ public class FieldService {
                 .collect(Collectors.toList());
     }
 
+    public FieldResponseDTO getFieldById(UUID propertyId, UUID fieldId) {
+        Field field = fieldRepository.findById(fieldId)
+                .orElseThrow(() -> new ResourceNotFoundException("Field not found with id: " + fieldId));
+
+        if (!field.getProperty().getId().equals(propertyId)) {
+            throw new ResourceNotFoundException("Field not found with id: " + fieldId + " in property " + propertyId);
+        }
+
+        return mapToResponseDTO(field);
+    }
+
     private FieldResponseDTO mapToResponseDTO(Field field) {
         return FieldResponseDTO.builder()
                 .id(field.getId())
