@@ -2,6 +2,7 @@ package com.breno.property.controller;
 
 import com.breno.property.dto.CreateFieldRequestDTO;
 import com.breno.property.dto.FieldResponseDTO;
+import com.breno.property.dto.UpdateFieldRequestDTO;
 import com.breno.property.service.FieldService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,16 @@ public class FieldController {
 
         FieldResponseDTO field = fieldService.getFieldById(propertyId, fieldId);
         return ResponseEntity.ok(field);
+    }
+
+    @PutMapping("/{fieldId}")
+    public ResponseEntity<FieldResponseDTO> updateField(
+            @PathVariable UUID propertyId,
+            @PathVariable UUID fieldId,
+            @RequestBody UpdateFieldRequestDTO requestDTO) {
+
+        FieldResponseDTO updatedField = fieldService.updateField(propertyId, fieldId, requestDTO);
+        return ResponseEntity.ok(updatedField);
     }
 
 }

@@ -66,6 +66,29 @@ public class FieldService {
         return mapToResponseDTO(field);
     }
 
+    public FieldResponseDTO updateField(UUID propertyId, UUID fieldId, UpdateFieldRequestDTO requestDTO) {
+        if (!propertyRepository.existsById(propertyId)) {
+            throw new ResourceNotFoundException("Property not found with id: " + propertyId);
+        }
+
+        Field fieldToUpdate = fieldRepository.findById(fieldId)
+                .orElseThrow(() -> new ResourceNotFoundException("Field not found with id: " + fieldId));
+
+        if (!fieldToUpdate.getProperty().getId().equals(propertyId)) {
+            throw new ResourceNotFoundException("Field with id: " + fieldId + " does not belong to property " + propertyId);
+        }
+
+        fieldToUpdate.setIdentifier(requestDTO.getIdentifier());
+        fieldToUpdate.setArea(requestDTO.getArea());
+        fieldToUpdate.setCurrentCrop(requestDTO.getCurrentCrop());
+        fieldToUpdate.setGeometry(requestDTO.getGeometry());
+        fieldToUpdate.setUpdatedAt(Instant.now());
+
+        Field updatedField = fieldRepository.save(fieldToUpdate);
+
+        return mapToResponseDTO(updatedField);
+    }
+
     private FieldResponseDTO mapToResponseDTO(Field field) {
         return FieldResponseDTO.builder()
                 .id(field.getId())
