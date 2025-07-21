@@ -2,7 +2,6 @@ package com.breno.property.dto;
 
 import lombok.Builder;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 

@@ -2,8 +2,7 @@ package com.breno.property.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.awt.*;
+import org.locationtech.jts.geom.Polygon;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
