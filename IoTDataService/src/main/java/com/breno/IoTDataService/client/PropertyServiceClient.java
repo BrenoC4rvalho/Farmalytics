@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "property-service", url = "http://localhost:8080/api")
+@FeignClient(name = "property-service")
 public interface PropertyServiceClient {
 
     @GetMapping("/properties/{propertyId}/fields/{fieldId}")
