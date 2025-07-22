@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # --- BANCOS DE DADOS ---
+  db_property:
+    image: postgres:15-alpine
+    container_name: db_property
+    environment:
+      - POSTGRES_DB=farmalytics_property_db
+      - POSTGRES_USER=seu_usuario
+      - POSTGRES_PASSWORD=sua_senha
+    ports:
+      - "5432:5432"
+    volumes:
+      - property_data:/var/lib/postgresql/data
+
+  db_iot:
+    image: postgres:15-alpine
+    container_name: db_iot
+    environment:
+      - POSTGRES_DB=farmalytics_iot_db
+      - POSTGRES_USER=seu_usuario
+      - POSTGRES_PASSWORD=sua_senha
+    ports:
+      - "5433:5432"
+    volumes:
+      - iot_data:/var/lib/postgresql/data
+
+  # --- INFRAESTRUTURA KAFKA ---
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  # --- MICROSSERVIÇOS ---
+  discovery-service:
+    build: ./discovery-service
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+
+  property-service:
+    build: ./property
+    container_name: property-service
+    depends_on:
+      - db_property
+      - discovery-service
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  iot-data-service:
+    build: ./iot-data-service
+    container_name: iot-data-service
+    depends_on:
+      - db_iot
+      - kafka
+      - discovery-service
+      - property-service # Garante que o property-service inicie antes
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+volumes:
+  property_data:
+  iot_data:
