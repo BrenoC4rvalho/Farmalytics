@@ -1,0 +1,37 @@
+# Porta onde o Gateway vai rodar
+server:
+  port: 8088
+
+# Nome da aplicação para o Eureka
+spring:
+  application:
+    name: api-gateway
+  
+  # Configuração do Gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          # Habilita a descoberta de rotas através do Eureka
+          enabled: true
+      
+      # Definição das rotas manuais
+      routes:
+        # Rota para o Property Service
+        - id: property-service-route
+          uri: lb://property-service # "lb" significa Load Balancer (fornecido pelo Eureka)
+          predicates:
+            - Path=/api/properties/**
+        
+        # Rota para o IoT Data Service
+        - id: iot-data-service-route
+          uri: lb://iot-data-service
+          predicates:
+            - Path=/api/sensors/**, /api/readings/**
+
+# Configuração do Cliente Eureka
+eureka:
+  client:
+    service-url:
+      # Endereço do nosso Discovery Service
+      defaultZone: http://localhost:8761/eureka/
