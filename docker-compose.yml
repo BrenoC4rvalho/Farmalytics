@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # --- BANCOS DE DADOS ---
+  # --- INFRAESTRUTURA DE BANCO DE DADOS E MENSAGERIA ---
   db_property:
     image: postgres:15-alpine
     container_name: db_property
@@ -9,10 +9,9 @@ services:
       - POSTGRES_DB=farmalytics_property_db
       - POSTGRES_USER=seu_usuario
       - POSTGRES_PASSWORD=sua_senha
-    ports:
-      - "5432:5432"
     volumes:
       - property_data:/var/lib/postgresql/data
+    # A porta do banco de dados não precisa mais ser exposta para a máquina host
 
   db_iot:
     image: postgres:15-alpine
@@ -21,12 +20,9 @@ services:
       - POSTGRES_DB=farmalytics_iot_db
       - POSTGRES_USER=seu_usuario
       - POSTGRES_PASSWORD=sua_senha
-    ports:
-      - "5433:5432"
     volumes:
       - iot_data:/var/lib/postgresql/data
 
-  # --- INFRAESTRUTURA KAFKA ---
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: zookeeper
@@ -40,7 +36,7 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"
+      - "9092:9092" # Expor Kafka se precisar de ferramentas externas
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
@@ -50,21 +46,34 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
-  # --- MICROSSERVIÇOS ---
+  # --- MICROSSERVIÇOS DE SUPORTE ---
   discovery-service:
     build: ./discovery-service
     container_name: discovery-service
     ports:
-      - "8761:8761"
+      - "8761:8761" # O painel do Eureka continua exposto
 
+  # --- NOVO SERVIÇO: API GATEWAY ---
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    depends_on:
+      - discovery-service
+    ports:
+      - "8088:8088" # ESTE É O ÚNICO PONTO DE ENTRADA PARA A API
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+
+  # --- MICROSSERVIÇOS DE NEGÓCIO ---
   property-service:
     build: ./property
     container_name: property-service
     depends_on:
       - db_property
       - discovery-service
-    ports:
-      - "8080:8080"
+    # REMOVIDO: Não expomos mais a porta 8080 diretamente
+    # ports:
+    #   - "8080:8080"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
 
@@ -75,9 +84,10 @@ services:
       - db_iot
       - kafka
       - discovery-service
-      - property-service # Garante que o property-service inicie antes
-    ports:
-      - "8081:8081"
+      - property-service
+    # REMOVIDO: Não expomos mais a porta 8081 diretamente
+    # ports:
+    #   - "8081:8081"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
